@@ -9,14 +9,16 @@ import { BasicTactics } from './tactics/BasicTactics';
 import { EndgameEssentials } from './endgame/EndgameEssentials';
 import { ChessModal } from './chess/ChessModal';
 import { GraduationCap } from 'lucide-react';
+import { toast } from 'sonner';
 
 export function LearningPath() {
   const [showBasicMoves, setShowBasicMoves] = useState(false);
   const [showBasicTactics, setShowBasicTactics] = useState(false);
   const [showEndgame, setShowEndgame] = useState(false);
+  const [isCompletingLesson, setIsCompletingLesson] = useState(false);
   
   const user = useAuthStore((state) => state.user);
-  const { fetchProgress, lessonProgress, loading } = useProgressStore();
+  const { fetchProgress, lessonProgress, loading, completeLesson } = useProgressStore();
   const theme = useThemeStore(state => state.theme);
 
   useEffect(() => {
@@ -24,6 +26,29 @@ export function LearningPath() {
       fetchProgress(user.id);
     }
   }, [user, fetchProgress]);
+
+  const handleLessonComplete = async (lessonId: number) => {
+    if (!user || isCompletingLesson) return;
+
+    try {
+      setIsCompletingLesson(true);
+      await completeLesson(user.id, lessonId);
+      toast.success('Progress saved successfully!');
+    } catch (error) {
+      console.error('Error saving progress:', error);
+      toast.error('Failed to save progress. Please try again.');
+      // Retry mechanism
+      try {
+        await completeLesson(user.id, lessonId);
+        toast.success('Progress saved successfully after retry!');
+      } catch (retryError) {
+        console.error('Error saving progress after retry:', retryError);
+        toast.error('Failed to save progress. Your progress will be updated when you refresh.');
+      }
+    } finally {
+      setIsCompletingLesson(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -66,10 +91,8 @@ export function LearningPath() {
         <ChessModal onClose={() => setShowBasicMoves(false)}>
           <BasicMoves 
             onClose={() => setShowBasicMoves(false)} 
-            onComplete={() => {
-              if (user) {
-                useProgressStore.getState().completeLesson(user.id, 1);
-              }
+            onComplete={async () => {
+              await handleLessonComplete(1);
               setShowBasicMoves(false);
             }}
           />
@@ -80,10 +103,8 @@ export function LearningPath() {
         <ChessModal onClose={() => setShowBasicTactics(false)}>
           <BasicTactics 
             onClose={() => setShowBasicTactics(false)}
-            onComplete={() => {
-              if (user) {
-                useProgressStore.getState().completeLesson(user.id, 3);
-              }
+            onComplete={async () => {
+              await handleLessonComplete(3);
               setShowBasicTactics(false);
             }}
           />
@@ -93,14 +114,9 @@ export function LearningPath() {
       {showEndgame && (
         <ChessModal onClose={() => setShowEndgame(false)}>
           <EndgameEssentials 
-            onClose={() => {
-              setShowEndgame(false);
-            }}
-            onComplete={() => {
-              if (user) {
-                useProgressStore.getState().completeLesson(user.id, 4);
-                toast.success('Endgame Essentials completed!');
-              }
+            onClose={() => setShowEndgame(false)}
+            onComplete={async () => {
+              await handleLessonComplete(4);
               setShowEndgame(false);
             }}
           />
