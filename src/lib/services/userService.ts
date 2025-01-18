@@ -43,12 +43,19 @@ export const userService = {
   },
 
   async updateUserXP(userId: string, xp: number) {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('users')
       .update({ xp })
-      .eq('id', userId);
+      .eq('id', userId)
+      .select('xp, streak_days')
+      .single();
 
     if (error) throw error;
+    return {
+      xp: data.xp,
+      streakDays: data.streak_days,
+      streakBonus: 0 // We'll calculate this based on streak days in a future update
+    };
   },
 
   async resetDailyXP(userId: string) {
