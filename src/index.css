@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+  }
+
+  [data-theme="dark"] {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+  }
+
+  body {
+    @apply bg-background text-foreground min-h-screen transition-colors duration-200;
+  }
+}
+
+@layer components {
+  .chess-card {
+    @apply bg-card text-card-foreground rounded-lg shadow-lg p-6 transition-transform hover:scale-[1.02];
+  }
+
+  .btn-primary {
+    @apply bg-primary text-primary-foreground px-4 py-2 rounded-md 
+           hover:opacity-90 transition-opacity;
+  }
+
+  .progress-bar {
+    @apply h-2 rounded-full bg-accent overflow-hidden;
+  }
+
+  .progress-value {
+    @apply h-full bg-primary transition-all duration-300;
+  }
+}
